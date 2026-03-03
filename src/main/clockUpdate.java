@@ -1,17 +1,3 @@
-// ============================================================
-// ECLIPSE ENGINE - Atualizacao do Relogio
-// ============================================================
-// COMO USAR NO SKETCHWARE:
-// 1. Adicione um componente Timer chamado "timer_relogio"
-// 2. Intervalo: 1000 (1 segundo)
-// 3. No evento do Timer, adicione bloco "add source directly"
-// 4. Cole este codigo
-// 5. No final do onCreate, adicione: timer_relogio.start();
-//
-// VARIAVEL NECESSARIA:
-// Crie uma variavel Number chamada "ultimoMinuto" com valor -1
-// ============================================================
-
 java.util.Calendar cal = java.util.Calendar.getInstance();
 int hora = cal.get(java.util.Calendar.HOUR_OF_DAY);
 int minuto = cal.get(java.util.Calendar.MINUTE);
