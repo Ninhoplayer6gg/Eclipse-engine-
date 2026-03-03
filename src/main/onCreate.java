@@ -126,3 +126,11 @@ if (mostrarPerf) {
     linear_cardPerf.animate().alpha(1f).translationY(0f)
         .setDuration(400).setStartDelay(350);
 }
+timer_relogio.scheduleAtFixedRate(new TimerTask() { @Override public void run() { runOnUiThread(new Runnable() { @Override public void run() { 
+    // O código do clockUpdate vai rodar aqui a cada 1 segundo
+}});}}, 0, 1000);
+
+timer_perf.scheduleAtFixedRate(new TimerTask() { @Override public void run() { runOnUiThread(new Runnable() { @Override public void run() { 
+    // O código do performanceMonitor vai rodar aqui a cada 3 segundos
+}});}}, 0, 3000);
+    
