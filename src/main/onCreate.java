@@ -126,11 +126,48 @@ if (mostrarPerf) {
     linear_cardPerf.animate().alpha(1f).translationY(0f)
         .setDuration(400).setStartDelay(350);
 }
-timer_relogio.scheduleAtFixedRate(new TimerTask() { @Override public void run() { runOnUiThread(new Runnable() { @Override public void run() { 
-    // O código do clockUpdate vai rodar aqui a cada 1 segundo
-}});}}, 0, 1000);
+// --- BYPASS DO BUG: INICIALIZAÇÃO MANUAL DOS MOTORES ---
+// 1. Motor do Relógio e Bateria (corre a cada 1 segundo)
+new java.util.Timer().scheduleAtFixedRate(new java.util.TimerTask() {
+    @Override
+    public void run() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // Aqui entra a lógica do seu clockUpdate.java
+                java.util.Calendar cal = java.util.Calendar.getInstance();
+                int minuto = cal.get(java.util.Calendar.MINUTE);
+                if (minuto != ultimoMinuto) {
+                    ultimoMinuto = minuto;
+                    // Atualiza Relógio
+                    txt_hora.setText(new java.text.SimpleDateFormat("HH:mm").format(cal.getTime()));
+                    // Atualiza Data
+                    txt_data.setText(new java.text.SimpleDateFormat("EEE, dd MMM", new java.util.Locale("pt", "BR")).format(cal.getTime()).toUpperCase());
+                }
+                // Atualiza Bateria (Simples)
+                android.content.Intent batteryStatus = registerReceiver(null, new android.content.IntentFilter(android.content.Intent.ACTION_BATTERY_CHANGED));
+                int level = batteryStatus.getIntExtra(android.os.BatteryManager.EXTRA_LEVEL, -1);
+                txt_bateria.setText("🔋 " + level + "%");
+            }
+        });
+    }
+}, 0, 1000);
 
-timer_perf.scheduleAtFixedRate(new TimerTask() { @Override public void run() { runOnUiThread(new Runnable() { @Override public void run() { 
-    // O código do performanceMonitor vai rodar aqui a cada 3 segundos
-}});}}, 0, 3000);
-    
+// 2. Motor de Performance (corre a cada 3 segundos)
+new java.util.Timer().scheduleAtFixedRate(new java.util.TimerTask() {
+    @Override
+    public void run() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // Aqui entra a lógica do seu performanceMonitor.java
+                android.app.ActivityManager am = (android.app.ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+                android.app.ActivityManager.MemoryInfo mi = new android.app.ActivityManager.MemoryInfo();
+                am.getMemoryInfo(mi);
+                long usadaMB = (mi.totalMem - mi.availMem) / (1024 * 1024);
+                txt_ram.setText("💾 " + usadaMB + " MB");
+            }
+        });
+    }
+}, 0, 3000);
+                    
