@@ -1,15 +1,3 @@
-// ============================================================
-// ECLIPSE ENGINE - Monitor de Performance
-// ============================================================
-// COMO USAR NO SKETCHWARE:
-// 1. Adicione um Timer chamado "timer_perf" com intervalo 3000
-// 2. No evento do Timer, cole este codigo
-// 3. No onCreate, adicione: timer_perf.start();
-//
-// NOTA: 3 segundos e suficiente para monitores.
-//       Nunca use menos que 2000ms para evitar lag.
-// ============================================================
-
 float densidade = getResources().getDisplayMetrics().density;
 String corDestaque = "#00E5FF";
 String corAmbar = "#FFB300";
