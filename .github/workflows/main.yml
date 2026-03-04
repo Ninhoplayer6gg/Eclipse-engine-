@@ -13,12 +13,18 @@ jobs:
           repository: mkxp-z/mkxp-z
           submodules: recursive
 
-      - name: Install Dependencies
+      - name: Install Build Tools
         run: |
           sudo apt-get update
           sudo apt-get install -y meson ninja-build pkg-config
 
-      - name: Create Cross-File (Moto G22)
+      - name: Patch Meson for Android (Fix GL Error)
+        # Este comando troca a busca do OpenGL de PC pelo GLES do Android
+        run: |
+          sed -i "s/dependency('gl')/meson.get_compiler('c').find_library('GLESv2')/g" meson.build
+          sed -i "s/dependency('GL')/meson.get_compiler('c').find_library('GLESv2')/g" meson.build
+
+      - name: Create Cross-File
         run: |
           mkdir -p cross
           cat <<EOF > cross/android-armv7.txt
@@ -27,6 +33,7 @@ jobs:
           cpp = '$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi24-clang++'
           ar = '$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar'
           strip = '$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip'
+          pkgconfig = 'false'
 
           [host_machine]
           system = 'android'
@@ -37,10 +44,11 @@ jobs:
 
       - name: Compile for armeabi-v7a
         run: |
-          # Usando apenas o essencial para evitar erros de "Unknown options"
+          # Compilação otimizada para o Moto G22
           meson setup builddir \
             --cross-file cross/android-armv7.txt \
-            -Dbuildtype=release
+            -Dbuildtype=release \
+            -Doptimization=s
           ninja -C builddir
 
       - name: Upload Artifacts
