@@ -1,0 +1,40 @@
+name: Build Eclipse Engine Libs
+
+on:
+  workflow_dispatch: # Permite que você clique num botão para iniciar
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout mkxp-z
+        uses: actions/checkout@v4
+        with:
+          repository: mkxp-z/mkxp-z
+          submodules: recursive
+
+      - name: Setup Android NDK
+        uses: nandroid/setup-ndk@v1
+        with:
+          ndk-version: r25c # Versão estável para o Moto G22
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y meson ninja-build pkg-config
+
+      - name: Compile for armeabi-v7a
+        run: |
+          # Aqui o script configura a compilação específica para o seu processador
+          meson setup builddir \
+            --cross-file cross/android-armv7.txt \
+            -Duse_ffmpeg=false \
+            -Duse_nuklear=true
+          ninja -C builddir
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: eclipse-engine-libs-armv7
+          path: builddir/*.so
+          
