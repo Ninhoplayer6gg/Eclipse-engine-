@@ -18,14 +18,27 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y meson ninja-build pkg-config
 
-      - name: Setup Android NDK
-        # Usamos o caminho padrão das máquinas ubuntu-latest do GitHub
+      - name: Create Cross-File (Moto G22 Optimization)
+        # Este passo cria o ficheiro que faltava na hora!
         run: |
-          echo "ANDROID_NDK_HOME=${ANDROID_SDK_ROOT}/ndk-bundle" >> $GITHUB_ENV
+          mkdir -p cross
+          cat <<EOF > cross/android-armv7.txt
+          [binaries]
+          c = '$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi24-clang'
+          cpp = '$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi24-clang++'
+          ar = '$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar'
+          strip = '$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip'
 
-      - name: Compile for armeabi-v7a (Moto G22)
+          [host_machine]
+          system = 'android'
+          cpu_family = 'arm'
+          cpu = 'armv7a'
+          endian = 'little'
+          EOF
+
+      - name: Compile for armeabi-v7a
         run: |
-          # Otimização específica para o seu processador
+          # Configuração direta para o seu processador
           meson setup builddir \
             --cross-file cross/android-armv7.txt \
             -Duse_ffmpeg=false \
