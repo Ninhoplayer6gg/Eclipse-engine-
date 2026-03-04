@@ -18,7 +18,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y meson ninja-build pkg-config
 
-      - name: Create Cross-File (Fixed Deprecation)
+      - name: Patch Meson for Android (O Retorno do Fix Gráfico)
+        run: |
+          # Avisa o motor para usar o GLESv2 (Android) e não o GL (Desktop)
+          sed -i "s/dependency('gl')/meson.get_compiler('c').find_library('GLESv2')/g" meson.build
+          sed -i "s/dependency('GL')/meson.get_compiler('c').find_library('GLESv2')/g" meson.build
+
+      - name: Create Cross-File
         run: |
           mkdir -p cross
           cat <<EOF > cross/android-armv7.txt
@@ -27,7 +33,7 @@ jobs:
           cpp = '$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi24-clang++'
           ar = '$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar'
           strip = '$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip'
-          # Corrigido de pkgconfig para pkg-config como sugerido pelo log
+          pkgconfig = '/usr/bin/false'
           pkg-config = '/usr/bin/false'
 
           [host_machine]
@@ -39,12 +45,11 @@ jobs:
 
       - name: Compile for armeabi-v7a
         run: |
-          # Otimização: -Dwrap_mode=forcefallback baixa as dependências que faltam (PhysFS, etc)
+          # O forcefallback baixa o PhysFS e o release otimiza a bateria
           meson setup builddir \
             --cross-file cross/android-armv7.txt \
             --wrap-mode=forcefallback \
-            -Dbuildtype=release \
-            -Doptimization=s
+            -Dbuildtype=release
           ninja -C builddir
 
       - name: Upload Artifacts
