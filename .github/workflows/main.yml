@@ -18,8 +18,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y meson ninja-build pkg-config
 
-      - name: Create Cross-File (Moto G22 Optimization)
-        # Este passo cria o ficheiro que faltava na hora!
+      - name: Create Cross-File
         run: |
           mkdir -p cross
           cat <<EOF > cross/android-armv7.txt
@@ -38,11 +37,11 @@ jobs:
 
       - name: Compile for armeabi-v7a
         run: |
-          # Configuração direta para o seu processador
+          # Removi o "use_" dos nomes e usei o padrão do mkxp-z
           meson setup builddir \
             --cross-file cross/android-armv7.txt \
-            -Duse_ffmpeg=false \
-            -Duse_nuklear=true \
+            -Dffmpeg=disabled \
+            -Dnuklear=true \
             -Dbuildtype=release
           ninja -C builddir
 
