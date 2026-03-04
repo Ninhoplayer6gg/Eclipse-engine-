@@ -18,13 +18,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y meson ninja-build pkg-config
 
-      - name: Patch Meson for Android (Fix GL Error)
-        # Este comando troca a busca do OpenGL de PC pelo GLES do Android
-        run: |
-          sed -i "s/dependency('gl')/meson.get_compiler('c').find_library('GLESv2')/g" meson.build
-          sed -i "s/dependency('GL')/meson.get_compiler('c').find_library('GLESv2')/g" meson.build
-
-      - name: Create Cross-File
+      - name: Create Cross-File (Fixed Deprecation)
         run: |
           mkdir -p cross
           cat <<EOF > cross/android-armv7.txt
@@ -33,7 +27,8 @@ jobs:
           cpp = '$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/armv7a-linux-androideabi24-clang++'
           ar = '$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar'
           strip = '$ANDROID_NDK_LATEST_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-strip'
-          pkgconfig = 'false'
+          # Corrigido de pkgconfig para pkg-config como sugerido pelo log
+          pkg-config = '/usr/bin/false'
 
           [host_machine]
           system = 'android'
@@ -44,9 +39,10 @@ jobs:
 
       - name: Compile for armeabi-v7a
         run: |
-          # Compilação otimizada para o Moto G22
+          # Otimização: -Dwrap_mode=forcefallback baixa as dependências que faltam (PhysFS, etc)
           meson setup builddir \
             --cross-file cross/android-armv7.txt \
+            --wrap-mode=forcefallback \
             -Dbuildtype=release \
             -Doptimization=s
           ninja -C builddir
